@@ -1,3 +1,7 @@
+import crypto from 'crypto';
+if (!globalThis.crypto) {
+  (globalThis as any).crypto = crypto;
+}
 import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
