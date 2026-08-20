@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs & TS artifacts
+dist/
+build/
+out/
+*.vsix
+backend/src/**/*.js
+backend/src/**/*.d.ts
+backend/src/**/*.d.ts.map
+backend/src/**/*.js.map
+backend/refactor.js
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+local_token
+*.pem
+*.key
+
+# System / Editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.log
+
+# Helper & test scripts
+*.cjs
+fix_*.js
+test_*.js
+test_*.cjs
+mock_*.js
