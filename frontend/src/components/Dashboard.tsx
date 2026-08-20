@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../api/apiClient';
-import { format } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 import { 
   Activity, 
   Flame, 
@@ -179,7 +179,7 @@ function Dashboard() {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2 text-slate-300">
                         <Clock className="w-4 h-4 text-slate-500" />
-                        {format(new Date(item.timestamp), 'h:mm a')}
+                        {safeFormatDate(item.timestamp || (item as any).createdAt, 'h:mm a')}
                       </div>
                     </td>
                     <td className="py-3 px-4 font-mono text-sm text-indigo-300">

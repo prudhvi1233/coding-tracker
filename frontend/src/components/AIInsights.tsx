@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../api/apiClient';
-import { format } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 import { 
   Sparkles, BrainCircuit, ThumbsUp, ThumbsDown, X, Clock,
   RefreshCw, TrendingUp, Code2, Folder, GitPullRequest, Target, Flame
@@ -104,7 +104,7 @@ export default function AIInsights() {
               </span>
               <span className="text-slate-400 text-xs flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {format(new Date(summary.topInsight.generatedAt), 'MMM d, h:mm a')}
+                {safeFormatDate(summary.topInsight.generatedAt, 'MMM d, h:mm a')}
               </span>
             </div>
             <h3 className="text-xl font-bold text-white mb-2">{summary.topInsight.title}</h3>

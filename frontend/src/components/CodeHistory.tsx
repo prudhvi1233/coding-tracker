@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { apiClient } from '../api/apiClient';
-import { format } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Folder, FileText, Clock, ChevronRight, Hash, FileCode2 } from 'lucide-react';
@@ -185,14 +185,14 @@ export default function CodeHistory() {
                   className={`text-left px-4 py-3 rounded-lg border transition-colors ${selectedSnapshot?._id === s._id ? 'bg-indigo-500/20 border-indigo-500/50 text-white' : 'bg-slate-800/50 hover:bg-slate-700 border-slate-700/50 text-slate-300'}`}
                 >
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">{format(new Date(s.timestamp), 'MMM d, yyyy')}</span>
+                    <span className="text-sm font-medium">{safeFormatDate(s.timestamp || s.createdAt, 'MMM d, yyyy')}</span>
                     <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${s.manual ? 'bg-orange-500/20 text-orange-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                       {s.manual ? 'Manual' : 'Automatic'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-400">
                     <Clock className="w-3 h-3" />
-                    {format(new Date(s.timestamp), 'h:mm:ss a')}
+                    {safeFormatDate(s.timestamp || s.createdAt, 'h:mm:ss a')}
                     <span className="ml-auto flex items-center gap-1"><Hash className="w-3 h-3"/> {s.lineCount} lines</span>
                   </div>
                 </button>
@@ -226,7 +226,7 @@ export default function CodeHistory() {
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <p className="text-sm text-slate-300">{format(new Date(selectedSnapshot.timestamp), 'MMM d, yyyy • h:mm:ss a')}</p>
+                  <p className="text-sm text-slate-300">{safeFormatDate(selectedSnapshot.timestamp || selectedSnapshot.createdAt, 'MMM d, yyyy • h:mm:ss a')}</p>
                   <p className="text-xs text-slate-500 mt-1">{selectedSnapshot.manual ? 'Manual Snapshot' : 'Automatic Snapshot'} • {selectedSnapshot.lineCount} lines</p>
                 </div>
                 

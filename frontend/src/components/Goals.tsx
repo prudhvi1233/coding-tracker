@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../api/apiClient';
-import { format } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 import { 
   Target, Trophy, Flame, Clock, Plus, Lock, CheckCircle2, XCircle
 } from 'lucide-react';
@@ -217,9 +217,9 @@ export default function Goals() {
                         )}
                         <p className="text-xs text-slate-400 flex items-center gap-2 mt-1">
                           <Clock className="w-3 h-3" /> 
-                          {isCompleted ? `Completed ${format(new Date(goal.completedAt), 'MMM d, yyyy')}` : 
+                          {isCompleted ? `Completed ${safeFormatDate(goal.completedAt, 'MMM d, yyyy')}` : 
                            isExpired ? 'Expired' : 
-                           `Ends ${format(new Date(goal.endDate), 'MMM d')}`}
+                           `Ends ${safeFormatDate(goal.endDate, 'MMM d')}`}
                         </p>
                       </div>
                       <div className={`px-2 py-1 rounded text-xs font-bold ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : isExpired ? 'bg-rose-500/20 text-rose-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
@@ -312,7 +312,7 @@ export default function Goals() {
                 <p className="text-xs text-slate-500 mt-1">{ach.description}</p>
                 {ach.unlocked && (
                   <p className="text-[10px] text-yellow-500/70 mt-2 font-mono">
-                    Unlocked {format(new Date(ach.unlockedAt), 'MMM d, yyyy')}
+                    Unlocked {safeFormatDate(ach.unlockedAt, 'MMM d, yyyy')}
                   </p>
                 )}
               </div>

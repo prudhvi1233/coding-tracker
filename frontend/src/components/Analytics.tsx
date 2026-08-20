@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '../api/apiClient';
-import { format, subDays, isAfter } from 'date-fns';
+import { subDays, isAfter } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 import { 
   Activity, 
   Clock, 
   Code2, 
-  Calendar as CalendarIcon,
   Flame,
   Trophy,
   Save,
@@ -133,7 +133,7 @@ export default function Analytics() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={filteredDaily}>
-                <XAxis dataKey="date" tickFormatter={(tick) => format(new Date(tick), 'MMM d')} stroke="#475569" fontSize={12} />
+                <XAxis dataKey="date" tickFormatter={(tick) => safeFormatDate(tick, 'MMM d')} stroke="#475569" fontSize={12} />
                 <YAxis stroke="#475569" fontSize={12} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
@@ -159,8 +159,8 @@ export default function Analytics() {
                     <span className="text-slate-300">{l.language}</span>
                     <span className="text-slate-500">{l.percentage}%</span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2">
-                    <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${l.percentage}%` }}></div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${l.percentage}%` }}></div>
                   </div>
                 </div>
               ))}
@@ -191,11 +191,11 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* Heatmap */}
+      {/* Activity Heatmap */}
       <div className="glass-panel p-6 rounded-2xl overflow-x-auto">
-        <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-          <CalendarIcon className="w-5 h-5 text-blue-400" />
-          Activity Calendar
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <Flame className="w-5 h-5 text-orange-400" />
+          Contribution Calendar
         </h3>
         <div className="min-w-[800px] text-slate-300">
           {heatmapData.length > 0 ? (
@@ -227,9 +227,9 @@ export default function Analytics() {
             <div key={s._id} className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4 hover:bg-slate-800/50 transition-colors">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <p className="text-slate-300 font-medium">{format(new Date(s.startedAt), 'MMM d, yyyy')}</p>
+                  <p className="text-slate-300 font-medium">{safeFormatDate(s.startedAt, 'MMM d, yyyy')}</p>
                   <p className="text-slate-500 text-xs mt-0.5">
-                    {format(new Date(s.startedAt), 'h:mm a')} - {format(new Date(s.lastActivityAt), 'h:mm a')}
+                    {safeFormatDate(s.startedAt, 'h:mm a')} - {safeFormatDate(s.lastActivityAt, 'h:mm a')}
                   </p>
                 </div>
                 <div className="text-right">

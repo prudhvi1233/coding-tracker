@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../AuthContext';
 import { User, LogOut, Laptop, Download, Trash2, ShieldAlert } from 'lucide-react';
-import { format } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 
 
 export default function Profile() {
@@ -115,7 +115,7 @@ export default function Profile() {
                   <div>
                     <h4 className="font-medium text-slate-200">{device.deviceName}</h4>
                     <p className="text-xs text-slate-500 mt-1">
-                      Added: {format(new Date(device.createdAt), 'MMM d, yyyy')}
+                      Added: {safeFormatDate(device.createdAt, 'MMM d, yyyy')}
                     </p>
                   </div>
                   <button 

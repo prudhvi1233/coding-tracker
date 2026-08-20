@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '../api/apiClient';
 import { format } from 'date-fns';
+import { safeFormatDate } from '../utils/dateUtils';
 import { 
   GitBranch, GitCommit, FileCode, Clock, BookOpen, AlertCircle, Folder
 } from 'lucide-react';
@@ -214,7 +215,7 @@ export default function GitInsights() {
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 mt-2">
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {format(new Date(commit.timestamp), 'MMM d, h:mm a')}
+                            <Clock className="w-3 h-3" /> {safeFormatDate(commit.timestamp, 'MMM d, h:mm a')}
                           </span>
                           <span className="text-slate-500">{commit.authorName}</span>
                           <div className="flex items-center gap-2 ml-auto">
