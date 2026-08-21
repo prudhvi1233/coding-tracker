@@ -17,7 +17,8 @@ import {
   Sparkles,
   MoreVertical,
   Edit2,
-  Trash2
+  Trash2,
+  ArrowRight
 } from 'lucide-react';
 
 interface TodayActivity {
@@ -41,7 +42,11 @@ interface RecentActivity {
   relativeFilePath?: string;
 }
 
-function Dashboard() {
+interface DashboardProps {
+  onNavigateToHistory?: () => void;
+}
+
+function Dashboard({ onNavigateToHistory }: DashboardProps) {
   const [today, setToday] = useState<TodayActivity | null>(null);
   const [streak, setStreak] = useState<StreakData | null>(null);
   const [recent, setRecent] = useState<RecentActivity[]>([]);
@@ -128,6 +133,8 @@ function Dashboard() {
       </div>
     );
   }
+
+  const displayedRecent = recent.slice(0, 5);
 
   return (
     <div className="space-y-8 animate-fadeIn relative">
@@ -262,79 +269,105 @@ function Dashboard() {
             <Activity className="w-4 h-4 text-indigo-400" />
             <h2 className="text-sm font-semibold text-white tracking-tight">Recent Activity Stream</h2>
           </div>
-          <span className="text-[11px] font-mono text-zinc-400">Last 10 Events</span>
+          
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-mono text-zinc-400">Last 5 Events</span>
+            {onNavigateToHistory && (
+              <button
+                onClick={onNavigateToHistory}
+                className="px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer"
+              >
+                View All <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {recent.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-800/60 bg-black/40 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider font-mono">
-                  <th className="py-3 px-4">Time</th>
-                  <th className="py-3 px-4">File Name</th>
-                  <th className="py-3 px-4">Language</th>
-                  <th className="py-3 px-4">Project</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/40 text-xs">
-                {recent.map((item) => (
-                  <tr key={item._id} className="hover:bg-zinc-900/40 transition-colors group">
-                    <td className="py-3 px-4 text-zinc-400 font-mono whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-zinc-500 group-hover:text-indigo-400 transition-colors" />
-                        {safeFormatDate(item.timestamp || (item as any).createdAt, 'h:mm:ss a')}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 font-mono font-medium text-zinc-200 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <FileCode className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span className="truncate max-w-xs">{item.fileName}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <Badge variant="language" language={item.language}>
-                        {item.language}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-zinc-400 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <FolderGit2 className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                        <span className="font-mono text-zinc-300">{item.projectName}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap relative">
-                      <button
-                        onClick={() => setActiveMenuId(activeMenuId === item._id ? null : item._id)}
-                        className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-all cursor-pointer"
-                        title="File actions"
-                      >
-                        <MoreVertical className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* 3-Dots Context Menu Dropdown */}
-                      {activeMenuId === item._id && (
-                        <div className="absolute right-4 top-10 z-40 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1 font-mono text-xs text-left animate-fadeIn">
-                          <button
-                            onClick={() => openModal('rename', item)}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Edit2 className="w-3.5 h-3.5 text-indigo-400" /> Rename File
-                          </button>
-                          <button
-                            onClick={() => openModal('delete', item)}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-rose-400" /> Delete History
-                          </button>
-                        </div>
-                      )}
-                    </td>
+        {displayedRecent.length > 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-800/60 bg-black/40 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider font-mono">
+                    <th className="py-3 px-4">Time</th>
+                    <th className="py-3 px-4">File Name</th>
+                    <th className="py-3 px-4">Language</th>
+                    <th className="py-3 px-4">Project</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/40 text-xs">
+                  {displayedRecent.map((item) => (
+                    <tr key={item._id} className="hover:bg-zinc-900/40 transition-colors group">
+                      <td className="py-3 px-4 text-zinc-400 font-mono whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-zinc-500 group-hover:text-indigo-400 transition-colors" />
+                          {safeFormatDate(item.timestamp || (item as any).createdAt, 'h:mm:ss a')}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-medium text-zinc-200 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <FileCode className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                          <span className="truncate max-w-xs">{item.fileName}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <Badge variant="language" language={item.language}>
+                          {item.language}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-zinc-400 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <FolderGit2 className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                          <span className="font-mono text-zinc-300">{item.projectName}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap relative">
+                        <button
+                          onClick={() => setActiveMenuId(activeMenuId === item._id ? null : item._id)}
+                          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-all cursor-pointer"
+                          title="File actions"
+                        >
+                          <MoreVertical className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* 3-Dots Context Menu Dropdown */}
+                        {activeMenuId === item._id && (
+                          <div className="absolute right-4 top-10 z-40 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1 font-mono text-xs text-left animate-fadeIn">
+                            <button
+                              onClick={() => openModal('rename', item)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 text-indigo-400" /> Rename File
+                            </button>
+                            <button
+                              onClick={() => openModal('delete', item)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-400" /> Delete History
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Bottom Footer View All Banner */}
+            {onNavigateToHistory && (
+              <div className="p-3 border-t border-zinc-800/80 bg-black/40 text-center">
+                <button
+                  onClick={onNavigateToHistory}
+                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 font-mono inline-flex items-center justify-center gap-1.5 cursor-pointer group"
+                >
+                  View Full Activity History & Explorer
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-6">
             <EmptyState

@@ -203,7 +203,7 @@ function AppContent() {
       {/* Main Content Workspace */}
       <main className="flex-1 overflow-y-auto relative z-10 custom-scrollbar flex flex-col min-w-0">
         <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex-1">
-          {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'dashboard' && <Dashboard onNavigateToHistory={() => setActiveTab('history')} />}
           {activeTab === 'history' && <CodeHistory />}
           {activeTab === 'snapshots' && <CodeHistory />}
           {activeTab === 'analytics' && <Analytics />}
