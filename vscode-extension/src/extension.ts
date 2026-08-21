@@ -8,7 +8,7 @@ let tracker: ActivityTracker;
 let localServer: LocalServer;
 let gitTracker: GitTracker;
 let apiClient: ApiClient;
-5
+
 export function activate(context: vscode.ExtensionContext) {
   console.log('Coding Tracker is now active!');
 

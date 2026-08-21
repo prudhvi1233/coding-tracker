@@ -62,6 +62,26 @@ export class ApiClient {
     this.queueItem('/snapshots', payload);
   }
 
+  public async sendDeleteFile(deleteData: { projectName: string; relativeFilePath: string; fileName: string }) {
+    const eventId = crypto.randomUUID();
+    const payload = {
+      ...deleteData,
+      eventId
+    };
+
+    this.queueItem('/activity/delete-file', payload);
+  }
+
+  public async sendRenameFile(renameData: { projectName: string; oldRelativeFilePath: string; oldFileName: string; newRelativeFilePath: string; newFileName: string }) {
+    const eventId = crypto.randomUUID();
+    const payload = {
+      ...renameData,
+      eventId
+    };
+
+    this.queueItem('/activity/rename', payload);
+  }
+
   private queueItem(endpoint: string, payload: any) {
     this.queue.push({
       eventId: payload.eventId || crypto.randomUUID(),

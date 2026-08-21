@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../AuthContext';
-import { Code2, LogIn, UserPlus } from 'lucide-react';
+import { Terminal, LogIn, UserPlus, ShieldAlert } from 'lucide-react';
 
 export default function AuthScreens() {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,13 +25,12 @@ export default function AuthScreens() {
         const res = await apiClient.post('/auth/register', { email, password, displayName });
         login(res.data.token, res.data.user);
         
-        // Trigger migration if this is the first user
         try {
           await apiClient.post('/account/migrate', {}, {
             headers: { Authorization: `Bearer ${res.data.token}` }
           });
         } catch (migErr) {
-          console.error('Migration skipped or failed (likely not first user).', migErr);
+          console.error('Migration skipped or failed.', migErr);
         }
       }
     } catch (err: any) {
@@ -41,59 +40,67 @@ export default function AuthScreens() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-md w-full glass-panel p-8 rounded-2xl border border-indigo-500/20 shadow-2xl">
-        <div className="flex justify-center mb-6">
-          <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-            <Code2 className="w-10 h-10 text-indigo-400" />
+    <div className="min-h-screen bg-[#090d16] flex items-center justify-center p-4 selection:bg-indigo-500/30 relative overflow-hidden">
+      {/* Background Decorative Glows */}
+      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-md w-full glass-card p-8 rounded-2xl border border-slate-800/80 shadow-2xl relative z-10 space-y-6">
+        <div className="flex flex-col items-center text-center space-y-2">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner mb-1">
+            <Terminal className="w-6 h-6" />
           </div>
+          
+          <h1 className="text-2xl font-mono font-bold tracking-tight text-white">
+            CodingTracker
+          </h1>
+          <p className="text-xs text-slate-400 max-w-xs font-sans">
+            {isLogin ? 'Sign in to access your developer activity telemetry.' : 'Create an account to track your VS Code coding activity.'}
+          </p>
         </div>
-        
-        <h2 className="text-3xl font-bold text-center text-white mb-2">
-          Coding Tracker
-        </h2>
-        <p className="text-slate-400 text-center mb-8">
-          {isLogin ? 'Sign in to access your stats.' : 'Create an account to track your coding journey.'}
-        </p>
 
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-3 rounded-xl mb-6 text-sm text-center">
-            {error}
+          <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-4 py-3 rounded-xl text-xs font-mono flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Display Name</label>
+              <label className="block font-medium text-slate-300 mb-1">Display Name</label>
               <input 
                 type="text" 
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                placeholder="Developer Name"
+                className="w-full bg-slate-900/60 border border-slate-700/60 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500"
                 required
               />
             </div>
           )}
           
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
+            <label className="block font-medium text-slate-300 mb-1">Email Address</label>
             <input 
               type="email" 
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              placeholder="developer@domain.com"
+              className="w-full bg-slate-900/60 border border-slate-700/60 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+            <label className="block font-medium text-slate-300 mb-1">Password</label>
             <input 
               type="password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              placeholder="••••••••••••"
+              className="w-full bg-slate-900/60 border border-slate-700/60 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500"
               required
             />
           </div>
@@ -101,10 +108,10 @@ export default function AuthScreens() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 mt-6 disabled:opacity-50"
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-mono font-semibold py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 mt-6 cursor-pointer disabled:opacity-50"
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : isLogin ? (
               <><LogIn className="w-4 h-4" /> Sign In</>
             ) : (
@@ -113,10 +120,10 @@ export default function AuthScreens() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="pt-4 border-t border-slate-800/60 text-center">
           <button 
             onClick={() => { setIsLogin(!isLogin); setError(''); }}
-            className="text-slate-400 hover:text-indigo-400 text-sm font-medium transition-colors"
+            className="text-slate-400 hover:text-indigo-300 text-xs font-mono transition-colors cursor-pointer"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>

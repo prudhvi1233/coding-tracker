@@ -11,6 +11,7 @@ export class ActivityTracker {
   private enabled: boolean;
   private lastSentTime: Record<string, number> = {};
   private lastSnapshotTime: Record<string, number> = {};
+  private recentlyRenamedPaths: Map<string, number> = new Map();
   private readonly DEBOUNCE_TIME = 30000; // 30 seconds debounce per file for activity
 
   constructor(apiClient: ApiClient) {
@@ -26,6 +27,14 @@ export class ActivityTracker {
     const subscriptions: vscode.Disposable[] = [];
     vscode.workspace.onDidSaveTextDocument(this.onDidSaveTextDocument, this, subscriptions);
     vscode.workspace.onDidChangeConfiguration(this.onDidChangeConfiguration, this, subscriptions);
+
+    // Watch for file rename and move events
+    vscode.workspace.onDidRenameFiles(this.onDidRenameFiles, this, subscriptions);
+
+    // Watch for file deletion events
+    const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*');
+    fileWatcher.onDidDelete((uri) => this.onDidDeleteFile(uri), this, subscriptions);
+    subscriptions.push(fileWatcher);
 
     this.disposable = vscode.Disposable.from(...subscriptions);
   }
@@ -75,6 +84,75 @@ export class ActivityTracker {
     return false;
   }
 
+  // Handle File Rename and Move events
+  private async onDidRenameFiles(e: vscode.FileRenameEvent) {
+    if (!this.enabled) return;
+
+    for (const file of e.files) {
+      const oldUri = file.oldUri;
+      const newUri = file.newUri;
+
+      if (oldUri.scheme !== 'file' || newUri.scheme !== 'file') continue;
+
+      const oldPath = oldUri.fsPath;
+      const newPath = newUri.fsPath;
+
+      // Cache oldPath to ignore subsequent file delete events for this path
+      this.recentlyRenamedPaths.set(oldPath, Date.now());
+      setTimeout(() => {
+        this.recentlyRenamedPaths.delete(oldPath);
+      }, 5000);
+
+      const oldFileName = oldPath.split(/[/\\]/).pop() || '';
+      const newFileName = newPath.split(/[/\\]/).pop() || '';
+
+      const config = vscode.workspace.getConfiguration('codingTracker');
+      const ignoredFolders = config.get<string[]>('ignoredFolders', ['node_modules', '.git', 'dist', 'build', 'coverage']);
+      if (this.shouldIgnoreFile(oldFileName, oldPath, ignoredFolders)) continue;
+
+      const workspaceFolder = vscode.workspace.getWorkspaceFolder(oldUri) || vscode.workspace.getWorkspaceFolder(newUri);
+      const projectName = workspaceFolder ? workspaceFolder.name : 'Unknown Project';
+      const oldRelativeFilePath = workspaceFolder ? vscode.workspace.asRelativePath(oldUri, false) : oldFileName;
+      const newRelativeFilePath = workspaceFolder ? vscode.workspace.asRelativePath(newUri, false) : newFileName;
+
+      await this.apiClient.sendRenameFile({
+        projectName,
+        oldRelativeFilePath,
+        oldFileName,
+        newRelativeFilePath,
+        newFileName
+      });
+    }
+  }
+
+  // Handle File Deletion events
+  private async onDidDeleteFile(uri: vscode.Uri) {
+    if (!this.enabled || uri.scheme !== 'file') return;
+
+    const filePath = uri.fsPath;
+
+    // Check if this path was recently renamed/moved
+    const renamedAt = this.recentlyRenamedPaths.get(filePath);
+    if (renamedAt && (Date.now() - renamedAt < 5000)) {
+      return; // Skip delete processing for renamed/moved file
+    }
+
+    const fileName = filePath.split(/[/\\]/).pop() || '';
+    const config = vscode.workspace.getConfiguration('codingTracker');
+    const ignoredFolders = config.get<string[]>('ignoredFolders', ['node_modules', '.git', 'dist', 'build', 'coverage']);
+    if (this.shouldIgnoreFile(fileName, filePath, ignoredFolders)) return;
+
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+    const projectName = workspaceFolder ? workspaceFolder.name : 'Unknown Project';
+    const relativeFilePath = workspaceFolder ? vscode.workspace.asRelativePath(uri, false) : fileName;
+
+    await this.apiClient.sendDeleteFile({
+      projectName,
+      relativeFilePath,
+      fileName
+    });
+  }
+
   public async saveManualSnapshot() {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -118,9 +196,11 @@ export class ActivityTracker {
       this.lastSentTime[filePath] = now;
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
       const projectName = workspaceFolder ? workspaceFolder.name : 'Unknown Project';
+      const relativeFilePath = workspaceFolder ? vscode.workspace.asRelativePath(uri, false) : fileName;
 
       const activity = {
         fileName,
+        relativeFilePath,
         language: document.languageId,
         projectName,
         totalLines,
